@@ -3,37 +3,159 @@ var router = express.Router();
 var Product = require('../models/product');
 var Cart = require('../models/cart');
 var Order = require('../models/order');
+
+router.get('/', function(req, res, next){
+  var successMsg = req.flash('success')[0]; 
+  res.render('shop/aisles', { title: 'BetterWay', successMsg: successMsg, noMessages: !successMsg}); 
+});
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  //if a success message exist, fetch it
-  var successMsg = req.flash('success')[0];
+router.get('/fruits', function(req, res, next) {
+  Product.find(function(error,docs){
+    var productChunks = [];
+    var chunkSize = 3; 
+    for (var i = 0; i < 6; i += chunkSize){
+      productChunks.push(docs.slice(i,i+chunkSize));
+    }
+    res.render('shop/index', { title: 'BetterWay', products: productChunks});    
+  });
+});
+
+
+router.get('/beverages', function(req, res, next) {
 
   Product.find(function(error,docs){
     var productChunks = [];
     var chunkSize = 3; 
-    for (var i = 0; i < docs.length; i += chunkSize){
+    for (var i = 6; i < 12; i += chunkSize){
       productChunks.push(docs.slice(i,i+chunkSize));
     }
-    res.render('shop/index', { title: 'BetterWay', products: productChunks, successMsg: successMsg, noMessages: !successMsg});    
+    res.render('shop/beverages', { title: 'BetterWay', products: productChunks});    
+  });
+});
+
+router.get('/breadandbakery', function(req, res, next) {
+
+  Product.find(function(error,docs){
+    var productChunks = [];
+    var chunkSize = 3; 
+    for (var i = 12; i < 18; i += chunkSize){
+      productChunks.push(docs.slice(i,i+chunkSize));
+    }
+    res.render('shop/breadandbakery', { title: 'BetterWay', products: productChunks});    
+  });
+});
+
+router.get('/dairy', function(req, res, next) {
+
+  Product.find(function(error,docs){
+    var productChunks = [];
+    var chunkSize = 3; 
+    for (var i = 18; i < 24; i += chunkSize){
+      productChunks.push(docs.slice(i,i+chunkSize));
+    }
+    res.render('shop/dairy', { title: 'BetterWay', products: productChunks});    
+  });
+});
+
+router.get('/personalcare', function(req, res, next) {
+
+  Product.find(function(error,docs){
+    var productChunks = [];
+    var chunkSize = 3; 
+    for (var i = 24; i < 30; i += chunkSize){
+      productChunks.push(docs.slice(i,i+chunkSize));
+    }
+    res.render('shop/personalcare', { title: 'BetterWay', products: productChunks});    
   });
 });
 
 //route for add-to-cart page
-router.get('/add-to-cart/:id', function(req, res, next){
+router.get('/fruits/add-to-cart/:id', function(req, res, next){
+  var productId = req.params.id;
+  //if cart exists, then pass cart, if not then pass empty js object
+  var cart = new Cart(req.session.cart ? req.session.cart : {});
+  Product.findById(productId, function(err, product){
+    if (err){
+      return res.redirect('/fruits');
+    }
+    cart.add(product, product.id);
+    req.session.cart = cart;
+    console.log(req.session.cart);
+    res.redirect('/fruits'); 
+  });
+});
+
+router.get('/beverages/add-to-cart/:id', function(req, res, next){
   var productId = req.params.id;
   //if cart exists, then pass cart, if not then pass empty js object
   var cart = new Cart(req.session.cart ? req.session.cart : {});
   
   Product.findById(productId, function(err, product){
     if (err){
-      return res.redirect('/');
+      return res.redirect('/beverages');
     }
     cart.add(product, product.id);
     req.session.cart = cart;
     console.log(req.session.cart);
-    res.redirect('/'); 
+    res.redirect('/beverages'); 
   });
 });
+
+
+//route for add-to-cart page
+router.get('/breadandbakery/add-to-cart/:id', function(req, res, next){
+  var productId = req.params.id;
+  //if cart exists, then pass cart, if not then pass empty js object
+  var cart = new Cart(req.session.cart ? req.session.cart : {});
+  
+  Product.findById(productId, function(err, product){
+    if (err){
+      return res.redirect('/breadandbakery');
+    }
+    cart.add(product, product.id);
+    req.session.cart = cart;
+    console.log(req.session.cart);
+    res.redirect('/breadandbakery'); 
+  });
+});
+
+
+//route for add-to-cart page
+router.get('/dairy/add-to-cart/:id', function(req, res, next){
+  var productId = req.params.id;
+  //if cart exists, then pass cart, if not then pass empty js object
+  var cart = new Cart(req.session.cart ? req.session.cart : {});
+  
+  Product.findById(productId, function(err, product){
+    if (err){
+      return res.redirect('/dairy');
+    }
+    cart.add(product, product.id);
+    req.session.cart = cart;
+    console.log(req.session.cart);
+    res.redirect('/dairy'); 
+  });
+});
+
+
+
+//route for add-to-cart page
+router.get('/personalcare/add-to-cart/:id', function(req, res, next){
+  var productId = req.params.id;
+  //if cart exists, then pass cart, if not then pass empty js object
+  var cart = new Cart(req.session.cart ? req.session.cart : {});
+  
+  Product.findById(productId, function(err, product){
+    if (err){
+      return res.redirect('/personalcare');
+    }
+    cart.add(product, product.id);
+    req.session.cart = cart;
+    console.log(req.session.cart);
+    res.redirect('/personalcare'); 
+  });
+});
+
 //Removing one item in shopping cart
 router.get('/reduce/:id', function(req, res, next){
   var productId = req.params.id;
